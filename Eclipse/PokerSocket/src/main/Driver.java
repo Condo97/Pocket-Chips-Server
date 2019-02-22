@@ -48,11 +48,12 @@ public class Driver {
 	
 	public UserObject getUserById(String id, PrintWriter writer) {
 		try {
+			System.out.println("teeeest");
 			Statement myStatement = myConn.createStatement();
 			ResultSet rs = myStatement.executeQuery("select * from " + id);
 			ArrayList<GameObject> go = new ArrayList<GameObject>();
 			String name = "";
-			
+
 			while(rs.next()) {
 				if(rs.getString(2) == null) {
 					name = rs.getString(3);
@@ -62,7 +63,7 @@ public class Driver {
  				}
 			}
 			
-			UserObject uo = new UserObject(id, go, writer, name);
+			UserObject uo = new UserObject(id, go, writer, name); //Tests
 			
 			return uo;
 		} catch (SQLException e) {
