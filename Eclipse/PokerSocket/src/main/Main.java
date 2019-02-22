@@ -35,8 +35,6 @@ public class Main {
             System.exit(1);
         }
 
-		System.out.println("");
-
 		int port = Integer.parseInt(args[0]);
 		
 		ServerSocket listener = new ServerSocket(port, 100);
