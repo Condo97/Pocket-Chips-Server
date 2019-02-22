@@ -48,7 +48,6 @@ public class Driver {
 	
 	public UserObject getUserById(String id, PrintWriter writer) {
 		try {
-			System.out.println("teeeest");
 			Statement myStatement = myConn.createStatement();
 			ResultSet rs = myStatement.executeQuery("select * from " + id);
 			ArrayList<GameObject> go = new ArrayList<GameObject>();

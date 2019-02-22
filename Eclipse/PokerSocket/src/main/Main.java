@@ -34,6 +34,8 @@ public class Main {
             System.err.println("Usage: java Main <port number>");
             System.exit(1);
         }
+
+		System.out.println("");
 		
 		int port = Integer.parseInt(args[0]);
 		
