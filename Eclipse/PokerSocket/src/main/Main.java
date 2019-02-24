@@ -152,13 +152,14 @@ public class Main {
 	        				System.out.println("User " + u.getName() + " created.");
 	        				out.println(output);
 		    	            	
-		    	            	break;
+	        				break;
 	        			}
 	        			
 	        			case "eun": {		//USAGE: eun:UserId:name
 	        				//Edit Username
 	        				UserObject u = Protocol.getUserById(args[1], out);
-	        				Protocol.editUsername(u, args[2]);
+	        				u.setName(args[2]);
+	        				Protocol.editUsername(u);
 	        				out.println("na:" + args[2]);
 	        				
 	        				break;
@@ -199,11 +200,11 @@ public class Main {
         					}
         					
         					String temp = "&";
-        					temp += (g.getPotObject().getChipValues()[0] + ":");
-        					temp += (g.getPotObject().getChipValues()[1] + ":");
-        					temp += (g.getPotObject().getChipValues()[2] + ":");
-        					temp += (g.getPotObject().getChipValues()[3] + ":");
-        					temp += (g.getPotObject().getChipValues()[4] + ":");
+        					temp += (g.getChipValues()[0] + ":");
+        					temp += (g.getChipValues()[1] + ":");
+        					temp += (g.getChipValues()[2] + ":");
+        					temp += (g.getChipValues()[3] + ":");
+        					temp += (g.getChipValues()[4] + ":");
         					
         					output += temp;
 	        				
@@ -240,7 +241,7 @@ public class Main {
 	        				
 	        				UserObject u = Protocol.getUserById(username, out);
 	        				
-	        				if(u != null && Protocol.existsById(gameID)) out.println("vg:1");
+	        				if(u != null && Protocol.gameExists(gameID)) out.println("vg:1");
 	        				else out.println("vg:0");
 	        				
 	        				break;
@@ -250,51 +251,40 @@ public class Main {
 	        				//Join Game 
         					UserObject u = Protocol.getUserById(args[1], out);
         					
-        					if(Protocol.existsById(args[2])) {
+        					if(Protocol.gameExists(args[2])) {
 		        				GameObject g = Protocol.getGameById(args[2]);
-		        				PlayerObject p = Protocol.newPlayer(args[1]);
-		        				boolean shouldBreak = false;
-		        				
-		        				//System.out.println("Size: " + g.getPlayers().size());
-		        				
-		        				for(UserObject user: loggedInUsers) {
-		        					if(user.getId().equals(p.getUserId())) {
-		        						user.setCurrentGame(g);
-		        					}
-		        				}
-		        				
-	//	        				if(g.getPlayers().size() == 0) {
-	//	        					Protocol.addPlayerToGame(p, g);
-	//	        					String output = "pl:" + p.getId() + ":" + g.getId();
-	//		        				out.println(output);
-	//	        					break;
-	//	        				}
-		        				
-	//	        				Chip potChips = g.getPotChipObject();
-	//	        				String output = "pot:" + potChips.getRed() + ":" + potChips.getBlue() + ":" + potChips.getGreen() + ":" + potChips.getBlack() + ":" + potChips.getPurple();
-	//	        				out.println(output);
-		        				
-		        				for(int i = 0; i < g.getPlayers().size(); i++) {
-		        					if(g.getPlayers().get(i).getUserId().equals(u.getId())) {
-		        						//System.out.println("If");
-		        						p = Protocol.getPlayerById(g.getPlayers().get(i).getId());
-		        						
-		        						String output = "pl:" + p.getId() + ":" + g.getId() + ":" + p.getChipObject().getRed() + ":" + p.getChipObject().getBlue() + ":" + p.getChipObject().getGreen() + ":" + p.getChipObject().getBlack() + ":" + p.getChipObject().getPurple() + ":" + g.getPotChipObject().getRed() + ":" + g.getPotChipObject().getBlue() + ":" + g.getPotChipObject().getGreen() + ":" + g.getPotChipObject().getBlack() + ":" + g.getPotChipObject().getPurple();
-	    	        					out.println(output);
-	    	        					
-	    	        					shouldBreak = true;
-	    	        					
-	    	        					break;
-		        					}
-		        				}
-		        				
-		        				if(shouldBreak) break;
-		        				
+								boolean shouldBreak = false;
+
+								for(UserObject user: loggedInUsers) {
+									if(user.getId().equals(u.getId())) {
+										user.setCurrentGame(g);
+									}
+								}
+
+								for(int i = 0; i < g.getPlayers().size(); i++) {
+									if(g.getPlayers().get(i).getUserId().equals(u.getId())) {
+										//System.out.println("If");
+										PlayerObject p = Protocol.getPlayerById(g.getPlayers().get(i).getId());
+
+										String output = "pl:" + p.getId() + ":" + g.getId() + ":" + p.getChipObject().getRed() + ":" + p.getChipObject().getBlue() + ":" + p.getChipObject().getGreen() + ":" + p.getChipObject().getBlack() + ":" + p.getChipObject().getPurple() + ":" + g.getPotChipObject().getRed() + ":" + g.getPotChipObject().getBlue() + ":" + g.getPotChipObject().getGreen() + ":" + g.getPotChipObject().getBlack() + ":" + g.getPotChipObject().getPurple();
+										out.println(output);
+
+										shouldBreak = true;
+
+										break;
+									}
+								}
+
+								if(shouldBreak) break;
+
+								PlayerObject p = Protocol.newPlayerInGame(args[1], g);
+
 		        				System.out.println("GETS PAST BREAK (add player to game)");
 		        				
 		        				p.addChips(g.getDefaultChips());
+		        				Protocol.updatePlayerInDatabase(p);
 		        				
-		        				Protocol.addPlayerToGame(p, g, u);
+//		        				Protocol.addPlayerToGame(p, g, u);
 		        				
 		        				//System.out.println("User " + u.getName() + " added to game \n-> " + u.getId() + "\n-> " + g.getId());
 		        				
@@ -352,9 +342,11 @@ public class Main {
 		        				p.removeChips(chips); //Saved
 		        				
 		        				//System.out.println("r: " + g.getPotObject().getChipObject().getRed());
-		        				
-		        				dr.updatePotInDatabase(g.getPotObject());
-		        				dr.updatePlayerInDatabase(p);
+
+								dr.updatePotChips(g.getPotObject());
+								dr.updatePlayerChips(p);
+//		        				dr.updatePotInDatabase(g.getPotObject());
+//		        				dr.updatePlayerInDatabase(p);
 		        				
 		        				String output = "bet:" + p.getChipObject().getRed() + ":" + p.getChipObject().getBlue() + ":" + p.getChipObject().getGreen() + ":" + p.getChipObject().getBlack() + ":" + p.getChipObject().getPurple();
 		        				out.println(output);
@@ -455,24 +447,26 @@ public class Main {
 				    	        						if(user.getId().equals(a.getMainPlayer().getUserId())) {
 				    	        							Chip c = g.getPotChipObject().clone();
 				    	        	        				
-					    	        	        				Driver dr = new Driver();
-					    	        	        				g.removeFromPot(c); //Saved
-					    	        	        				a.getMainPlayer().addChips(c); //Saved
+				    	        							Driver dr = new Driver();
+				    	        							g.removeFromPot(c); //Saved
+															a.getMainPlayer().addChips(c); //Saved
+
+															dr.updatePotChips(g.getPotObject());
+															dr.updatePlayerChips(a.getMainPlayer());
+//															dr.updatePotInDatabase(g.getPotObject());
+//															dr.updatePlayerInDatabase(a.getMainPlayer());
 					    	        	        				
-					    	        	        				dr.updatePotInDatabase(g.getPotObject());
-					    	        	        				dr.updatePlayerInDatabase(a.getMainPlayer());
-					    	        	        				
-					    	        	        				String output = "ch:" + c.getRed() + ":" + c.getBlue() + ":" + c.getGreen() + ":" + c.getBlack() + ":" + c.getPurple();
-					    	        	        				user.getWriter().println(output);
-					    	        	        				
-					    	        	        				for(PlayerObject player2: g.getPlayers()) {
-					    	        	        					for(UserObject user2: loggedInUsers) {
-					    	        	        						if(user2.getId().equals(player2.getUserId())) {
-					    	        	        							output = "rp:";
-					    	        	        							user2.getWriter().println(output);
-					    	        	        						}
-					    	        	        					}
-					    	        	        				}
+															String output = "ch:" + c.getRed() + ":" + c.getBlue() + ":" + c.getGreen() + ":" + c.getBlack() + ":" + c.getPurple();
+															user.getWriter().println(output);
+
+															for(PlayerObject player2: g.getPlayers()) {
+																for(UserObject user2: loggedInUsers) {
+																	if(user2.getId().equals(player2.getUserId())) {
+																		output = "rp:";
+																		user2.getWriter().println(output);
+																	}
+																}
+															}
 				    	        						}
 				    	        					}
 			        						}
@@ -494,7 +488,7 @@ public class Main {
         						if(p.getUserId().equals(user.getId())) {
         							output += user.getName();
         						}
-						}
+							}
 						
 	        				for(int i = 0; i < aca.size(); i++) {
 	        					if(aca.get(i).getType().equals("win")) {
@@ -536,9 +530,11 @@ public class Main {
 	        				Driver dr = new Driver();
 	        				g.removeFromPot(c); //Saved
 	        				p.addChips(c); //Saved
-	        				
-	        				dr.updatePotInDatabase(g.getPotObject());
-	        				dr.updatePlayerInDatabase(p);
+
+							dr.updatePotChips(g.getPotObject());
+							dr.updatePlayerChips(p);
+//	        				dr.updatePotInDatabase(g.getPotObject());
+//	        				dr.updatePlayerInDatabase(p);
 	        				
 	        				String output = "ch:" + c.getRed() + ":" + c.getBlue() + ":" + c.getGreen() + ":" + c.getBlack() + ":" + c.getPurple();
 	        				out.println(output);
@@ -798,11 +794,11 @@ public class Main {
         					}
 	        				
 	        				String temp = "&";
-        					temp += (g.getPotObject().getChipValues()[0] + ":");
-        					temp += (g.getPotObject().getChipValues()[1] + ":");
-        					temp += (g.getPotObject().getChipValues()[2] + ":");
-        					temp += (g.getPotObject().getChipValues()[3] + ":");
-        					temp += (g.getPotObject().getChipValues()[4] + ":");
+        					temp += (g.getChipValues()[0] + ":");
+        					temp += (g.getChipValues()[1] + ":");
+        					temp += (g.getChipValues()[2] + ":");
+        					temp += (g.getChipValues()[3] + ":");
+        					temp += (g.getChipValues()[4] + ":");
         					
         					gglog += temp;
 	        				

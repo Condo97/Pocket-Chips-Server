@@ -7,9 +7,8 @@ import javax.xml.bind.DatatypeConverter;
 public class PotObject {
 	private String id;
 	private Chip chips;
-	private double[] chipValues;
 	
-	public PotObject(double[] chipValues) {
+	public PotObject() {
 		Random rd = new Random();
 		byte[] b = new byte[30];
 		rd.nextBytes(b);
@@ -17,13 +16,11 @@ public class PotObject {
 		id = "po" + DatatypeConverter.printHexBinary(b);
 		
 		chips = new Chip();
-		this.chipValues = chipValues;
 	}
 	
-	public PotObject(String id, Chip pot, double[] chipValues) {
+	public PotObject(String id, Chip pot) {
 		this.id = id;
 		this.chips = pot;
-		this.chipValues = chipValues;
 	}
 	
 	public String getId() {
@@ -52,9 +49,5 @@ public class PotObject {
 	
 	public void removeChips(Chip chips) {
 		this.chips.removeChips(chips);
-	}
-	
-	public double[] getChipValues() {
-		return chipValues;
 	}
 }

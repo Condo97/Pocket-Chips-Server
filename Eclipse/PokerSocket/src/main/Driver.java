@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import com.sun.jdi.ClassNotPreparedException;
 import objects.Chip;
 import objects.GameObject;
 import objects.PlayerObject;
@@ -21,50 +22,142 @@ public class Driver {
 	public Driver() {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			myConn = DriverManager.getConnection("jdbc:mysql://localhost/pokerChips?autoReconnect=true&useSSL=false", "pokerChipsRemote", "pokerChips14?!");
+			myConn = DriverManager.getConnection("jdbc:mysql://localhost/pocketChips?autoReconnect=true&useSSL=false", "pokerChipsRemote", "pokerChips14?!");
 		}
 		catch (Exception exc) {
 			exc.printStackTrace();
 		}
 	}
-	
-	public boolean existsById(String id) {
+
+	public boolean userExists(String userID) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("show tables like '" + id + "'");
-			
-			int i = 0;
-			while(rs.next()) {
-				i++;
-			}
-			
-			if(i != 0)
-				return true;
-			return false;
-		} catch (SQLException e) {
-			return false;
+			PreparedStatement ps = myConn.prepareStatement("select name from Users where userID=?");
+			ps.setString(1, userID);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) return true;
+		} catch (SQLException p) {
+			System.out.println("User Exists SQL error");
 		}
+
+		return false;
+	}
+
+	public boolean gameExists(String gameID) {
+		try {
+			PreparedStatement ps = myConn.prepareStatement("select name from Games where gameID=?");
+			ps.setString(1, gameID);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) return true;
+		} catch (SQLException p) {
+			System.out.println("Game Exists SQL error");
+		}
+
+		return false;
+	}
+
+	public boolean playerExists(String playerID) {
+		try {
+			PreparedStatement ps = myConn.prepareStatement("select red from Players where playerID=?");
+			ps.setString(1, playerID);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) return true;
+		} catch (SQLException p) {
+			System.out.println("Player Exists SQL error");
+		}
+
+		return false;
+	}
+
+	public boolean potExists(String potID) {
+		try {
+			PreparedStatement ps = myConn.prepareStatement("select red from Pot where userID=?");
+			ps.setString(1, potID);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) return true;
+		} catch (SQLException p) {
+			System.out.println("Pot Exists SQL error");
+		}
+
+		return false;
 	}
 	
 	public UserObject getUserById(String id, PrintWriter writer) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("select * from " + id);
-			ArrayList<GameObject> go = new ArrayList<GameObject>();
+			PreparedStatement ps = myConn.prepareStatement("select * from Users where userID=?");
+			ps.setString(1, id);
+			ResultSet rs = ps.executeQuery();
 			String name = "";
 
 			while(rs.next()) {
-				if(rs.getString(2) == null) {
-					name = rs.getString(3);
- 				} else {
- 					String goId = rs.getString(2);
- 					go.add(getGameById(goId));
- 				}
+				name = rs.getString("name");
+
+				//Need to get Games for User ID
+//				if(rs.getString(2) == null) {
+//					name = rs.getString(3);
+// 				} else {
+// 					String goId = rs.getString(2);
+// 					go.add(getGameById(goId));
+// 				}
 			}
 			
-			UserObject uo = new UserObject(id, go, writer, name); //Tests
+			UserObject uo = new UserObject(id, getGamesForUser(id), writer, name); //Tests
 			
 			return uo;
+		} catch (SQLException e) {
+			return null;
+		}
+	}
+
+	public ArrayList<GameObject> getGamesForUser(String userID) {
+		try {
+			PreparedStatement playerPS = myConn.prepareStatement("select gameID from Players where userID=?");
+			playerPS.setString(1, userID);
+			ResultSet playerRS = playerPS.executeQuery();
+			ArrayList<GameObject> games = new ArrayList<GameObject>();
+
+			while(playerRS.next()) {
+				games.add(getGameById(playerRS.getString("gameID")));
+			}
+
+			return games;
+		} catch (SQLException e) {
+			return null;
+		}
+	}
+
+	public ArrayList<PlayerObject> getPlayersForGame(String gameID) {
+		try {
+			PreparedStatement playerPS = myConn.prepareStatement("select * from Players where gameID=?");
+			playerPS.setString(1, gameID);
+			ResultSet playerRS = playerPS.executeQuery();
+			ArrayList<PlayerObject> players = new ArrayList<PlayerObject>();
+
+			while(playerRS.next()) {
+				Chip c = new Chip(playerRS.getInt("red"), playerRS.getInt("blue"), playerRS.getInt("yellow"), playerRS.getInt("green"), playerRS.getInt("orange"));
+				players.add(new PlayerObject(c, playerRS.getString("playerID"), playerRS.getString("userID")));
+
+			}
+
+			return players;
+		} catch (SQLException e) {
+			return null;
+		}
+	}
+
+	public PotObject getPotForGame(String gameID) {
+		try {
+			PreparedStatement playerPS = myConn.prepareStatement("select * from Pots where gameID=?");
+			playerPS.setString(1, gameID);
+			ResultSet playerRS = playerPS.executeQuery();
+			PotObject pot = null;
+
+			while(playerRS.next()) {
+				Chip c = new Chip(playerRS.getInt("red"), playerRS.getInt("blue"), playerRS.getInt("yellow"), playerRS.getInt("green"), playerRS.getInt("orange"));
+				pot = new PotObject(playerRS.getString("potID"), c);
+
+			}
+
+			return pot;
 		} catch (SQLException e) {
 			return null;
 		}
@@ -72,15 +165,13 @@ public class Driver {
 	
 	public String getUsernameById(String id) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("select * from " + id);
+			PreparedStatement ps = myConn.prepareStatement("select name from Users where userID=?");
+			ps.setString(1, id);
+			ResultSet rs = ps.executeQuery();
 			String name = "";
 			
-			while(rs.next()) {
-				if(rs.getString(2) == null)
-					name = rs.getString(3);
-			}
-			
+			while(rs.next()) name = rs.getString("name");
+
 			return name;
 		} catch (SQLException e) {
 			return null;
@@ -90,36 +181,24 @@ public class Driver {
 	public GameObject getGameById(String id) {
 		//System.out.println("init game object: " + id);
 		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("select * from " + id);
-			ArrayList<PlayerObject> po = new ArrayList<PlayerObject>();
-			Chip defaultChips = new Chip();
-			String potId = "";
-			String name = "";
-			//System.out.println("before while: " + id);
-			
+			PreparedStatement ps = myConn.prepareStatement("select * from ?");
+			ps.setString(1, id);
+			ResultSet rs = ps.executeQuery();
+			GameObject go = null;
+
 			while(rs.next()) {
 				//System.out.println("3: " + rs.getString(3));
-				if(rs.getString(2) == null || rs.getString(2).equals("")) {
-					potId = rs.getString(3);
-					name = rs.getString(4);
-					//System.out.println("null or zero: " + id);
-					try {
-						//System.out.println(rs.getString(5));
-						defaultChips.addChips(Double.parseDouble(rs.getString(5)), Double.parseDouble(rs.getString(6)), Double.parseDouble(rs.getString(7)), Double.parseDouble(rs.getString(8)), Double.parseDouble(rs.getString(9)));
-					} catch (SQLException e) {
-						System.out.println("Old game!");
-					}
-				} else {
-					String poId = rs.getString(2);
-					po.add(getPlayerById(poId));
-					//System.out.println("in the else statement: " + id);
-				}
+				Chip c = new Chip(rs.getInt("red"), rs.getInt("blue"), rs.getInt("yellow"), rs.getInt("green"), rs.getInt("orange"));
+				double[] cv = new double[5];
+				cv[0] = rs.getDouble("red");
+				cv[1] = rs.getDouble("blue");
+				cv[2] = rs.getDouble("yellow");
+				cv[3] = rs.getDouble("green");
+				cv[4] = rs.getDouble("orange");
+				go = new GameObject(id, getPlayersForGame(id), getPotForGame(id), rs.getString("name"), c, cv);
 			}
 			
-			PotObject pot = getPotById(potId);
-			//System.out.println("after while: " + po.size());
-			return new GameObject(id, po, pot, name, defaultChips);
+			return go;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
@@ -128,22 +207,17 @@ public class Driver {
 	
 	public PlayerObject getPlayerById(String id) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("select * from " + id);
-			double red = 0, blue = 0, green = 0, black = 0, purple = 0;
-			String userId = "";
-			
+			PreparedStatement ps = myConn.prepareStatement("select * from Players where playerID=?");
+			ps.setString(1, id);
+			ResultSet rs = ps.executeQuery();
+			PlayerObject p = null;
+
 			while(rs.next()) {
-				red = rs.getDouble(2);
-				blue = rs.getDouble(3);
-				green = rs.getDouble(4);
-				black = rs.getDouble(5);
-				purple = rs.getDouble(6);
-				userId = rs.getString(7);
+				Chip c = new Chip(rs.getInt("red"), rs.getInt("blue"), rs.getInt("yellow"), rs.getInt("green"), rs.getInt("orange"));
+				p = new PlayerObject(c, id, rs.getString("userID"));
 			}
-			
-			Chip chips = new Chip(red, blue, green, black, purple);
-			return new PlayerObject(chips, id, userId);
+
+			return p;
 		} catch (SQLException e) {
 			return null;
 		}
@@ -151,190 +225,191 @@ public class Driver {
 	
 	public PotObject getPotById(String id) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("select * from " + id);
-			double red = 0, blue = 0, green = 0, black = 0, purple = 0;
-			double[] chipValues = new double[5];
-			
+			PreparedStatement ps = myConn.prepareStatement("select * from Pots where potID=?");
+			ps.setString(1, id);
+			ResultSet rs = ps.executeQuery();
+			PotObject p = null;
+
 			while(rs.next()) {
-				red = rs.getDouble(2);
-				blue = rs.getDouble(3);
-				green = rs.getDouble(4);
-				black = rs.getDouble(5);
-				purple = rs.getDouble(6);
-				
-				try {
-					chipValues[0] = rs.getDouble("chip0Value");
-					chipValues[1] = rs.getDouble("chip1Value");
-					chipValues[2] = rs.getDouble("chip2Value");
-					chipValues[3] = rs.getDouble("chip3Value");
-					chipValues[4] = rs.getDouble("chip4Value");
-				} catch(SQLException e) {
-					chipValues[0] = 1;
-					chipValues[1] = 5;
-					chipValues[2] = 10;
-					chipValues[3] = 25;
-					chipValues[4] = 100;
-				}
+				Chip c = new Chip(rs.getInt("red"), rs.getInt("blue"), rs.getInt("yellow"), rs.getInt("green"), rs.getInt("orange"));
+				p = new PotObject(id, c);
 			}
 			
-			Chip chips = new Chip(red, blue, green, black, purple);
-			return new PotObject(id, chips, chipValues);
+			return p;
 		} catch (SQLException e) {
 			return null;
 		}
 	}
 	
 	public void createUser(UserObject u) {
-		//System.out.println("User created: " + u.getId());
-		
 		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("create table " + u.getId() + " (id int not null auto_increment, games longtext null, name longtext null, primary key(id))");
+			PreparedStatement ps = myConn.prepareStatement("insert into Users (userID, name) values (?,?)");
+			ps.setString(1, u.getId());
+			ps.setString(2, u.getName());
+			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void addNameToUser(UserObject u, String name) {
+	public void setUsername(UserObject u) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("insert into " + u.getId() + " (name) values ('" + name + "')");
+			PreparedStatement ps = myConn.prepareStatement("update Users set name=? where userID=?");
+			ps.setString(1, u.getName());
+			ps.setString(2, u.getId());
+			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void changeUsername(UserObject u, String name) {
-		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("delete from " + u.getId() + " where name=('" + u.getName() + "')");
-			
-			Statement myStatement2 = myConn.createStatement();
-			myStatement2.executeUpdate("insert into " + u.getId() + " (name) values ('" + name + "')");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
+//	public void changeUsername(UserObject u, String name) {
+//		try {
+//			Statement myStatement = myConn.createStatement();
+//			myStatement.executeUpdate("delete from " + u.getId() + " where name=('" + u.getName() + "')");
+//
+//			Statement myStatement2 = myConn.createStatement();
+//			myStatement2.executeUpdate("insert into " + u.getId() + " (name) values ('" + name + "')");
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
-	public void addGameToUser(GameObject g, UserObject u) {
-		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("insert into " + u.getId() + " (games) values ('" + g.getId() + "')");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
+//	public void addGameToUser(GameObject g, UserObject u) {
+//		try {
+//			Statement myStatement = myConn.createStatement();
+//			myStatement.executeUpdate("insert into " + u.getId() + " (games) values ('" + g.getId() + "')");
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 	public void createGame(GameObject g) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("create table " + g.getId() + " (id int not null auto_increment, players longtext null, pot longtext null, name longtext null, red longtext null, blue longtext null, green longtext null, black longtext null, purple longtext null, primary key(id))");
+			PreparedStatement ps = myConn.prepareStatement("insert into Games (gameID, name, redV, blueV, yellowV, greenV, orangeV, red, blue, yellow, green, orange) values (?,?,?,?,?,?,?,?,?,?,?,?)");
+			ps.setString(1, g.getId());
+			ps.setString(2, g.getName());
+			ps.setDouble(3, g.getChipValues()[0]);
+			ps.setDouble(4, g.getChipValues()[1]);
+			ps.setDouble(5, g.getChipValues()[2]);
+			ps.setDouble(6, g.getChipValues()[3]);
+			ps.setDouble(7, g.getChipValues()[4]);
+			ps.setDouble(8, g.getDefaultChips().getRed());
+			ps.setDouble(9, g.getDefaultChips().getBlue());
+			ps.setDouble(10, g.getDefaultChips().getGreen());
+			ps.setDouble(11, g.getDefaultChips().getBlack());
+			ps.setDouble(12, g.getDefaultChips().getPurple());
+			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void addPlayerToGame(PlayerObject p, GameObject g) {
+	public void createPlayerInGame(PlayerObject p, GameObject g) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("select * from " + g.getId());
-			while(rs.next()) {
-				//System.out.println("S" + rs.getString(1) + rs.getString(2) + rs.getString(3) + rs.getString(4) + "E");
-			}
-			String query = ("insert into " + g.getId() + " (players) values ('" + p.getId() + "')");//, ?, ?)");
-			Statement myStatement2 = myConn.createStatement();
-			myStatement2.execute(query);
+			PreparedStatement ps = myConn.prepareStatement("insert into Players (playerID, userID, gameID, red, blue, yellow, green, orange) values (?,?,?,?,?,?,?,?)");
+			ps.setString(1, p.getId());
+			ps.setString(2, p.getUserId());
+			ps.setString(3, g.getId());
+			ps.setDouble(4, p.getChipObject().getRed());
+			ps.setDouble(5, p.getChipObject().getBlue());
+			ps.setDouble(6, p.getChipObject().getGreen());
+			ps.setDouble(7, p.getChipObject().getBlack());
+			ps.setDouble(8, p.getChipObject().getPurple());
+			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void addPotToGame(PotObject p, GameObject g, String name) {
+	public void createPotInGame(PotObject p, GameObject g) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("insert into " + g.getId() + " (pot,name,red,blue,green,black,purple) values ('" + p.getId() + "','" + name + "'," + g.getDefaultChips().getRed() + "," + g.getDefaultChips().getBlue() + "," + g.getDefaultChips().getGreen() + "," + g.getDefaultChips().getBlack() + "," + g.getDefaultChips().getPurple() + ")");
+			PreparedStatement ps = myConn.prepareStatement("insert into Pots (potID, gameID, red, blue, yellow, green, orange) values (?,?,?,?,?,?,?)");
+			ps.setString(1, p.getId());
+			ps.setString(2, g.getId());
+			ps.setDouble(3, p.getChipObject().getRed());
+			ps.setDouble(4, p.getChipObject().getBlue());
+			ps.setDouble(5, p.getChipObject().getGreen());
+			ps.setDouble(6, p.getChipObject().getBlack());
+			ps.setDouble(7, p.getChipObject().getPurple());
+			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void removePlayerFromGame(PlayerObject p, GameObject g) {
+	public void removePlayerFromGame(PlayerObject p) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("delete from " + g.getId() + " where players=('" + p.getId() + "')");
-			Statement myStatement2 = myConn.createStatement();
-			myStatement2.executeUpdate("drop table if exists " + p.getId());
+			PreparedStatement ps = myConn.prepareStatement("delete from Players where playerID=?");
+			ps.setString(1, p.getId());
+			ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void removeGameFromUser(GameObject g, UserObject u) {
+	public void removeUserFromGame(UserObject u, GameObject g) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("delete from " + u.getId() + " where games=('" + g.getId() + "')");
-		} catch (Exception e) {
+			PreparedStatement ps = myConn.prepareStatement("delete from Players where userID=? and gameID=?");
+			ps.setString(1, u.getId());
+			ps.setString(2, g.getId());
+			ps.executeUpdate();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
+
+//	public void removeGameFromUser(GameObject g, UserObject u) {
+//		try {
+//			Statement myStatement = myConn.createStatement();
+//			myStatement.executeUpdate("delete from " + u.getId() + " where games=('" + g.getId() + "')");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
-	public void createPlayer(PlayerObject p) {
+//	public void createPlayer(PlayerObject p) {
+//		try {
+//			Statement myStatement = myConn.createStatement();
+//			myStatement.executeUpdate("create table " + p.getId() + " (id int not null auto_increment, red double null, blue double null, green double null, black double null, purple double null, userId longtext null, primary key(id))");
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
+//	public void createPot(PotObject p) {
+//		try {
+//			Statement myStatement = myConn.createStatement();
+//			myStatement.executeUpdate("create table " + p.getId() + " (id int not null auto_increment, red double null, blue double null, green double null, black double null, purple double null, chip0Value double null, chip1Value double null, chip2Value double null, chip3Value double null, chip4Value double null, primary key(id))");
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
+	public void updatePlayerChips(PlayerObject p) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("create table " + p.getId() + " (id int not null auto_increment, red double null, blue double null, green double null, black double null, purple double null, userId longtext null, primary key(id))");
+			PreparedStatement ps = myConn.prepareStatement("update Players set red=?, blue=?, yellow=?, green=?, orange=? where playerID=?");
+			ps.setDouble(1, p.getChipObject().getRed());
+			ps.setDouble(2, p.getChipObject().getBlue());
+			ps.setDouble(3, p.getChipObject().getGreen());
+			ps.setDouble(4, p.getChipObject().getBlack());
+			ps.setDouble(5, p.getChipObject().getPurple());
+			ps.setString(6, p.getId());
+			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void createPot(PotObject p) {
+	public void updatePotChips(PotObject p) {
 		try {
-			Statement myStatement = myConn.createStatement();
-			myStatement.executeUpdate("create table " + p.getId() + " (id int not null auto_increment, red double null, blue double null, green double null, black double null, purple double null, chip0Value double null, chip1Value double null, chip2Value double null, chip3Value double null, chip4Value double null, primary key(id))");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void updatePlayerInDatabase(PlayerObject p) {
-		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("select * from " + p.getId());
-			
-			while(rs.next()) {
-				myConn.createStatement().executeUpdate("delete from " + p.getId() + " where id=" + rs.getInt(1));
-			}
-			
-			myConn.createStatement().executeUpdate("insert into " + p.getId() + " (red, blue, green, black, purple, userId) values (" + p.getChipObject().getRed() + "," + p.getChipObject().getBlue() + "," + p.getChipObject().getGreen() + "," + p.getChipObject().getBlack() + "," + p.getChipObject().getPurple() + ",'" + p.getUserId() + "')");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void updatePotInDatabase(PotObject p) {
-		try {
-			Statement myStatement = myConn.createStatement();
-			ResultSet rs = myStatement.executeQuery("select * from " + p.getId());
-			boolean hasChipValues = true;
-			
-			while(rs.next()) {
-				myConn.createStatement().executeUpdate("delete from " + p.getId() + " where id = " + rs.getInt(1));
-				
-				try {
-					double a = rs.getDouble("chip0Value");
-				} catch (SQLException e) {
-					hasChipValues = false;
-				}
-			}
-			
-			String statementString = "insert into " + p.getId() + " (red, blue, green, black, purple) values (" + p.getChipObject().getRed() + "," + p.getChipObject().getBlue() + "," + p.getChipObject().getGreen() + "," + p.getChipObject().getBlack() + "," + p.getChipObject().getPurple() + ")";
-			if(hasChipValues) {
-				double[] chipValues = p.getChipValues();
-				statementString = "insert into " + p.getId() + " (red, blue, green, black, purple, chip0Value, chip1Value, chip2Value, chip3Value, chip4Value) values (" + p.getChipObject().getRed() + "," + p.getChipObject().getBlue() + "," + p.getChipObject().getGreen() + "," + p.getChipObject().getBlack() + "," + p.getChipObject().getPurple() + "," + chipValues[0] + "," + chipValues[1] + "," + chipValues[2] + "," + chipValues[3] + "," + chipValues[4] + ")";
-			}
-			
-			myConn.createStatement().executeUpdate(statementString);
+			PreparedStatement ps = myConn.prepareStatement("update Pots set red=?, blue=?, green=?, yellow=?, orange=? where potID=?");
+			ps.setDouble(1, p.getChipObject().getRed());
+			ps.setDouble(2, p.getChipObject().getBlue());
+			ps.setDouble(3, p.getChipObject().getGreen());
+			ps.setDouble(4, p.getChipObject().getBlack());
+			ps.setDouble(5, p.getChipObject().getPurple());
+			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

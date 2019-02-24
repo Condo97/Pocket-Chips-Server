@@ -10,8 +10,9 @@ public class GameObject {
 	private String id, name;
 	private PotObject pot;
 	private Chip defaultChips;
+	private double[] chipValues;
 	
-	public GameObject(String name, Chip defaultChips) {
+	public GameObject(String name, Chip defaultChips, double[] chipValues) {
 		Random rd = new Random();
 		byte[] b = new byte[30];
 		rd.nextBytes(b);
@@ -22,14 +23,16 @@ public class GameObject {
 		
 		this.name = name;
 		this.defaultChips = defaultChips;
+		this.chipValues = chipValues;
 	}
 	
-	public GameObject(String id, ArrayList<PlayerObject> players, PotObject pot, String name, Chip defaultChips) {
+	public GameObject(String id, ArrayList<PlayerObject> players, PotObject pot, String name, Chip defaultChips, double[] chipValues) {
 		this.id = id;
 		this.players = players;
 		this.pot = pot;
 		this.name = name;
 		this.defaultChips = defaultChips;
+		this.chipValues = chipValues;
 	}
 	
 	public void addPlayer(PlayerObject p) {
@@ -86,5 +89,9 @@ public class GameObject {
 	
 	public Chip getDefaultChips() {
 		return defaultChips;
+	}
+
+	public double[] getChipValues() {
+		return chipValues;
 	}
 }

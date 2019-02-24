@@ -36,51 +36,46 @@ public class Protocol {
 	public static UserObject newUser(PrintWriter writer, String name) {
 		UserObject uo = new UserObject(writer, name);
 		
-		if(dr.existsById(uo.getId()))
+		if(dr.userExists(uo.getId()))
 			return newUser(writer, name);
 		
 		dr.createUser(uo);
-		dr.addNameToUser(uo, name);
 		
 		return uo;
 	}
 	
-	public static void editUsername(UserObject u, String name) {
-		dr.changeUsername(u, name);
+	public static void editUsername(UserObject u) {
+		dr.setUsername(u);
 	}
 	
 	public static GameObject newGame(String name, Chip c, double[] chipValues) {
-		GameObject go = new GameObject(name, c);
-		PotObject pot = new PotObject(chipValues);
+		GameObject go = new GameObject(name, c, chipValues);
+		PotObject pot = new PotObject();
 		
-		if(dr.existsById(go.getId()))
+		if(dr.gameExists(go.getId()) || dr.potExists(pot.getId()))
 			return newGame(name, c, chipValues);
-		
-		dr.createGame(go);
-		dr.createPot(pot);
-		dr.addPotToGame(pot, go, name);
-		dr.updatePotInDatabase(pot);
+
 		go.setPot(pot);
-		
+		dr.createGame(go);
+		dr.createPotInGame(pot, go);
+
 		return go;
 	}
+
+	public static boolean gameExists(String gameID) {
+		return dr.gameExists(gameID);
+	}
 	
-	public static PlayerObject newPlayer(String userId) {
+	public static PlayerObject newPlayerInGame(String userId, GameObject game) {
 		PlayerObject po = new PlayerObject(userId);
 		
-		if(dr.existsById(po.getId()))
-			return newPlayer(userId);
+		if(dr.playerExists(po.getId()))
+			return newPlayerInGame(userId, game);
 		
-		dr.createPlayer(po);
-		dr.updatePlayerInDatabase(po);
+		dr.createPlayerInGame(po, game);
 		
 		return po;
-	}
-	
-	public static boolean existsById(String id) {
-		boolean r = dr.existsById(id);
-		return r;
-	}
+	} //HERE V
 	
 	public static UserObject getUserById(String id, PrintWriter writer) {
 		UserObject r = dr.getUserById(id, writer);
@@ -101,25 +96,17 @@ public class Protocol {
 		return r;
 	}
 	
-	public static void addPlayerToGame(PlayerObject p, GameObject g, UserObject u) {
-		dr.addPlayerToGame(p, g);
-		dr.addGameToUser(g, u);
-		dr.updatePlayerInDatabase(p);
-	}
+//	public static void addPlayerToGame(PlayerObject p, GameObject g, UserObject u) {
+//		dr.addPlayerToGame(p, g);
+//		dr.addGameToUser(g, u);
+//		dr.updatePlayerInDatabase(p);
+//	}
 	
 	public static void removeUserFromGame(UserObject u, GameObject g) {
-		ArrayList<PlayerObject> players = g.getPlayers();
-		
-		for(int i = 0; i < players.size(); i++) {
-			if(players.get(i).getUserId().equals(u.getId())) {
-				dr.removePlayerFromGame(players.get(i), g);
-			}
-		}
-		
-		dr.removeGameFromUser(g, u);
+		dr.removeUserFromGame(u, g);
 	}
 	
 	public static void updatePlayerInDatabase(PlayerObject p) {
-		dr.updatePlayerInDatabase(p);
+		dr.updatePlayerChips(p);
 	}
 }

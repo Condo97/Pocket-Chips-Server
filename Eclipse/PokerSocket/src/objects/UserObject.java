@@ -10,7 +10,7 @@ public class UserObject {
 	private String id, name;
 	private ArrayList<GameObject> hostedGames;
 	private PrintWriter writer;
-	private GameObject currentGame = new GameObject("", new Chip());
+	private GameObject currentGame = null;
 	
 	public UserObject(PrintWriter writer, String name) {
 		this.writer = writer;
