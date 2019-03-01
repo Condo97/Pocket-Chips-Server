@@ -7,11 +7,11 @@ import javax.xml.bind.DatatypeConverter;
 
 public class AuthenticationObject {
 	private String id, type;
-	private PlayerObject mainPlayer;
+	private PokerPlayerObject mainPlayer;
 	private Chip chipObject;
-	private ArrayList<PlayerObject> players = new ArrayList<PlayerObject>();
+	private ArrayList<PokerPlayerObject> players = new ArrayList<PokerPlayerObject>();
 	
-	public AuthenticationObject(String type, PlayerObject mainPlayer) {
+	public AuthenticationObject(String type, PokerPlayerObject mainPlayer) {
 		Random rd = new Random();
 		byte[] b = new byte[30];
 		rd.nextBytes(b);
@@ -22,7 +22,7 @@ public class AuthenticationObject {
 		this.chipObject = new Chip();
 	}
 	
-	public AuthenticationObject(String type, PlayerObject mainPlayer, Chip chipObject) {
+	public AuthenticationObject(String type, PokerPlayerObject mainPlayer, Chip chipObject) {
 		Random rd = new Random();
 		byte[] b = new byte[30];
 		rd.nextBytes(b);
@@ -37,7 +37,7 @@ public class AuthenticationObject {
 		return id;
 	}
 	
-	public PlayerObject getMainPlayer() {
+	public PokerPlayerObject getMainPlayer() {
 		return mainPlayer;
 	}
 	
@@ -45,15 +45,15 @@ public class AuthenticationObject {
 		return type;
 	}
 	
-	public ArrayList<PlayerObject> getPlayers() {
+	public ArrayList<PokerPlayerObject> getPlayers() {
 		return players;
 	}
 	
-	public void addPlayer(PlayerObject p) {
+	public void addPlayer(PokerPlayerObject p) {
 		players.add(p);
 	}
 	
-	public void removePlayer(PlayerObject p) {
+	public void removePlayer(PokerPlayerObject p) {
 		players.remove(p);
 	}
 	

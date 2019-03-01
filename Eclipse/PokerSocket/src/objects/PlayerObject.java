@@ -41,12 +41,12 @@ public class PlayerObject {
 		return userId;
 	}
 	
-	public void addChips(double red, double blue, double green, double black, double purple) {
-		chips.addChips(red, blue, green, black, purple);
+	public void addChips(double red, double blue, double yellow, double green, double orange) {
+		chips.addChips(red, blue, yellow, green, orange);
 	}
 	
-	public void removeChips(double red, double blue, double green, double black, double purple) {
-		chips.removeChips(red, blue, green, black, purple);
+	public void removeChips(double red, double blue, double yellow, double green, double orange) {
+		chips.removeChips(red, blue, yellow, green, orange);
 	}
 	
 	public void addChips(Chip chips) {

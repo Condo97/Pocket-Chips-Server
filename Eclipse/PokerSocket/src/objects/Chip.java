@@ -1,54 +1,54 @@
 package objects;
 
 public class Chip implements Cloneable {
-	private double red, blue, green, black, purple; //1, 5, 10, 25, 100
+	private double red, blue, yellow, green, orange; //1, 5, 10, 25, 100
 
 	public Chip() {
 		red = 0;
 		blue = 0;
+		yellow = 0;
 		green = 0;
-		black = 0;
-		purple = 0;
+		orange = 0;
 	}
 
-	public Chip(double red, double blue, double green, double black, double purple) {
+	public Chip(double red, double blue, double yellow, double green, double orange) {
 		this.red = red;
 		this.blue = blue;
+		this.yellow = yellow;
 		this.green = green;
-		this.black = black;
-		this.purple = purple;
+		this.orange = orange;
 	}
 	
 	public void addChips(double red, double blue, double green, double black, double purple) {
 		this.red += red;
 		this.blue += blue;
-		this.green += green;
-		this.black += black;
-		this.purple += purple;
+		this.yellow += green;
+		this.green += black;
+		this.orange += purple;
 	}
 	
 	public void addChips(Chip chips) {
 		red += chips.getRed();
 		blue += chips.getBlue();
+		yellow += chips.getYellow();
 		green += chips.getGreen();
-		black += chips.getBlack();
-		purple += chips.getPurple();
+		orange += chips.getOrange();
 	}
 	
 	public void removeChips(double red, double blue, double green, double black, double purple) {
 		this.red -= red;
 		this.blue -= blue;
-		this.green -= green;
-		this.black -= black;
-		this.purple -= purple;
+		this.yellow -= green;
+		this.green -= black;
+		this.orange -= purple;
 	}
 	
 	public void removeChips(Chip chips) {
 		red -= chips.getRed();
 		blue -= chips.getBlue();
+		yellow -= chips.getYellow();
 		green -= chips.getGreen();
-		black -= chips.getBlack();
-		purple -= chips.getPurple();
+		orange -= chips.getOrange();
 	}
 	
 	public double getRed() {
@@ -59,28 +59,28 @@ public class Chip implements Cloneable {
 		return blue;
 	}
 
+	public double getYellow() {
+		return yellow;
+	}
+
 	public double getGreen() {
 		return green;
 	}
 
-	public double getBlack() {
-		return black;
-	}
-
-	public double getPurple() {
-		return purple;
+	public double getOrange() {
+		return orange;
 	}
 	
 	public void setChips(double[] chips) {
 		red = chips[0];
 		blue = chips[1];
-		green = chips[2];
-		black = chips[3];
-		purple = chips[4];
+		yellow = chips[2];
+		green = chips[3];
+		orange = chips[4];
 	}
 	
 	public double[] getChips() {
-		return new double[] {red, blue, green, black, purple};
+		return new double[] {red, blue, yellow, green, orange};
 	}
 	
 	public Chip clone() {
