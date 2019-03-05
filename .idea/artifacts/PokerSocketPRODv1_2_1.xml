@@ -1,9 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="PokerSocketPRODv1_2_1">
-    <output-path>$USER_HOME$/Development/PokerSocket</output-path>
-    <root id="archive" name="PokerSocketPRODv1_2_1.jar">
-      <element id="module-output" name="PokerSocket" />
-      <element id="extracted-dir" path="$USER_HOME$/Eclipse/Server Test/lib/mysql-connector-java-5.1.41-bin.jar" path-in-jar="/" />
-    </root>
-  </artifact>
-</component>

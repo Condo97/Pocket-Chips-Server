@@ -56,4 +56,12 @@ public class GameObject {
 	public double[] getChipValues() {
 		return chipValues;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof GameObject)) return false;
+
+		if(((GameObject)obj).getId().equals(id)) return true;
+		return false;
+	}
 }

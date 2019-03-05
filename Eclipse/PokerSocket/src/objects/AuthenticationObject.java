@@ -6,12 +6,12 @@ import java.util.Random;
 import javax.xml.bind.DatatypeConverter;
 
 public class AuthenticationObject {
-	private String id, type;
+	private String id, gameID, type;
 	private PokerPlayerObject mainPlayer;
 	private Chip chipObject;
 	private ArrayList<PokerPlayerObject> players = new ArrayList<PokerPlayerObject>();
 	
-	public AuthenticationObject(String type, PokerPlayerObject mainPlayer) {
+	public AuthenticationObject(String type, PokerPlayerObject mainPlayer, String gameID) {
 		Random rd = new Random();
 		byte[] b = new byte[30];
 		rd.nextBytes(b);
@@ -20,9 +20,10 @@ public class AuthenticationObject {
 		this.type = type;
 		this.mainPlayer = mainPlayer;
 		this.chipObject = new Chip();
+		this.gameID = gameID;
 	}
 	
-	public AuthenticationObject(String type, PokerPlayerObject mainPlayer, Chip chipObject) {
+	public AuthenticationObject(String type, PokerPlayerObject mainPlayer, Chip chipObject, String gameID) {
 		Random rd = new Random();
 		byte[] b = new byte[30];
 		rd.nextBytes(b);
@@ -31,6 +32,7 @@ public class AuthenticationObject {
 		this.type = type;
 		this.mainPlayer = mainPlayer;
 		this.chipObject = chipObject;
+		this.gameID = gameID;
 	}
 	
 	public String getId() {
@@ -59,5 +61,17 @@ public class AuthenticationObject {
 	
 	public Chip getChipObject() {
 		return chipObject;
+	}
+
+	public String getGameID() {
+		return gameID;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof AuthenticationObject)) return false;
+
+		if(((AuthenticationObject)obj).getId().equals(id)) return true;
+		return false;
 	}
 }

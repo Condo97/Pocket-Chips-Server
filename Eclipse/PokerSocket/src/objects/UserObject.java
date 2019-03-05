@@ -1,5 +1,7 @@
 package objects;
 
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
@@ -10,7 +12,7 @@ public class UserObject {
 	private String id, name;
 	private ArrayList<GameObject> hostedGames;
 	private PrintWriter writer;
-	private GameObject currentGame = null;
+	private GameObject currentGame = new GameObject("", new Chip(), new double[0]);
 	
 	public UserObject(PrintWriter writer, String name) {
 		this.writer = writer;
@@ -70,5 +72,13 @@ public class UserObject {
 	
 	public GameObject getCurrentGame() {
 		return currentGame;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof UserObject)) return false;
+
+		if(((UserObject)obj).getId().equals(id)) return true;
+		return false;
 	}
 }

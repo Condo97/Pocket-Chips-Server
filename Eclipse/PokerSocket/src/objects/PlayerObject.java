@@ -7,7 +7,7 @@ import javax.xml.bind.DatatypeConverter;
 public class PlayerObject {
 	private Chip chips;
 	private String id, userId;
-	
+
 	public PlayerObject(String userId) {
 		Random rd = new Random();
 		byte[] b = new byte[30];
@@ -55,5 +55,13 @@ public class PlayerObject {
 	
 	public void removeChips(Chip chips) {
 		this.chips.removeChips(chips);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof PlayerObject)) return false;
+
+		if(((PlayerObject)obj).getId().equals(id)) return true;
+		return false;
 	}
 }

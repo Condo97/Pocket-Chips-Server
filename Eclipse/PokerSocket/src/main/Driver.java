@@ -45,7 +45,7 @@ public class Driver {
 	}
 
 	public boolean potExists(String potID) throws SQLException {
-		PreparedStatement ps = myConn.prepareStatement("select red from Pot where userID=?");
+		PreparedStatement ps = myConn.prepareStatement("select red from Pots where potID=?");
 		ps.setString(1, potID);
 		ResultSet rs = ps.executeQuery();
 		while(rs.next()) return true;
@@ -150,6 +150,31 @@ public class Driver {
 		}
 
 		if(go == null) System.out.println(id);
+
+		return go;
+	}
+
+	public PokerGameObject getPokerGameByPlayerID(String playerID) throws SQLException {
+		//System.out.println("init game object: " + id);
+		PreparedStatement ps = myConn.prepareStatement("select * from Games where playerID=?");
+		ps.setString(1, playerID);
+		ResultSet rs = ps.executeQuery();
+		PokerGameObject go = null;
+
+		while(rs.next()) {
+			//System.out.println("3: " + rs.getString(3));
+			Chip c = new Chip(rs.getInt("red"), rs.getInt("blue"), rs.getInt("yellow"), rs.getInt("green"), rs.getInt("orange"));
+			double[] cv = new double[5];
+			cv[0] = rs.getDouble("redV");
+			cv[1] = rs.getDouble("blueV");
+			cv[2] = rs.getDouble("yellowV");
+			cv[3] = rs.getDouble("greenV");
+			cv[4] = rs.getDouble("orangeV");
+			String id = rs.getString("gameID");
+			go = new PokerGameObject(id, getPokerPlayersForGame(id), getPotForGame(id), rs.getString("name"), c, cv);
+		}
+
+		if(go == null) System.out.println(playerID);
 
 		return go;
 	}
@@ -440,7 +465,8 @@ public class Driver {
 			cv[2] = rs.getDouble("yellowV");
 			cv[3] = rs.getDouble("greenV");
 			cv[4] = rs.getDouble("orangeV");
-			go = new BlackjackGameObject(playerID, getBlackjackPlayersForGame(playerID), rs.getString("name"), c, cv, rs.getDouble("decimalRatio"));
+			String id = rs.getString("gameID");
+			go = new BlackjackGameObject(id, getBlackjackPlayersForGame(id), rs.getString("name"), c, cv, rs.getDouble("decimalRatio"));
 		}
 
 		if(go == null) System.out.println(playerID);

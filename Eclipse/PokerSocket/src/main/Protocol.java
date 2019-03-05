@@ -100,6 +100,18 @@ public class Protocol {
 		dr.updatePlayerChips(p);
 	}
 
+	public static void updatePotInDatabase(PotObject p) throws SQLException {
+		dr.updatePotChips(p);
+	}
+
+	public static PokerGameObject getPokerGameByPlayerID(String id) throws SQLException {
+		return dr.getPokerGameByPlayerID(id);
+	}
+
+	public static BlackjackGameObject getBlackjackGameByPlayerID(String id) throws SQLException {
+		return dr.getBlackjackGameByPlayerID(id);
+	}
+
 	//Blackjack Game
 	public static BlackjackGameObject getBlackjackGameByID(String id) throws SQLException {
 		BlackjackGameObject r = dr.getBlackjackGameByID(id);
