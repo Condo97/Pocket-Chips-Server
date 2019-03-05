@@ -405,16 +405,16 @@ public class Main {
 
 				if(a.getPlayers().size() == 0) {
 					for(UserObject u: loggedInUsers) {
-						if(u.getId().equals(p.getUserId())) {
+						if(u.getId().equals(a.getMainPlayer().getUserId())) {
 							Chip c = g.getPotChipObject();
+							String output = "ch:" + c.getRed() + ":" + c.getBlue() + ":" + c.getYellow() + ":" + c.getGreen() + ":" + c.getOrange();
 
-							p.addChips(c);
+							a.getMainPlayer().addChips(c);
 							g.removeFromPot(c);
 
-							Protocol.updatePlayerInDatabase(p);
+							Protocol.updatePlayerInDatabase(a.getMainPlayer());
 							Protocol.updatePotInDatabase(g.getPotObject());
 
-							String output = "ch:" + c.getRed() + ":" + c.getBlue() + ":" + c.getYellow() + ":" + c.getGreen() + ":" + c.getOrange();
 							u.getWriter().println(output);
 						}
 
@@ -567,13 +567,13 @@ public class Main {
 
 				if(a.getPlayers().size() == 0) {
 					for(UserObject u: loggedInUsers) {
-						if(u.getId().equals(p.getUserId())) {
+						if(u.getId().equals(a.getMainPlayer().getUserId())) {
 							Chip c = a.getChipObject();
+							String output = "ch:" + c.getRed() + ":" + c.getBlue() + ":" + c.getYellow() + ":" + c.getGreen() + ":" + c.getOrange();
 
 							a.getMainPlayer().addChips(c);
 							Protocol.updatePlayerInDatabase(a.getMainPlayer());
 
-							String output = "ch:" + c.getRed() + ":" + c.getBlue() + ":" + c.getYellow() + ":" + c.getGreen() + ":" + c.getOrange();
 							u.getWriter().println(output);
 						}
 					}
@@ -842,7 +842,7 @@ public class Main {
 						break;
 					}
 					case "acap": authenticateChipAdditionAccept(args[1]); break;	//USAGE acap:PlayerId
-					case "acapd": authenticateChipAdditionDecline(args[1], args[2], args[3]);	//USAGE: acapd:PlayerId:GameId:AuthenticationId
+					case "acapd": authenticateChipAdditionDecline(args[1], args[2], args[3]); break;	//USAGE: acapd:PlayerId:GameId:AuthenticationId
 					case "rc": {			//USAGE rc:PlayerId:red:blue:green:black:purple
 						Chip c = new Chip(Double.parseDouble(args[2]), Double.parseDouble(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]));
 
