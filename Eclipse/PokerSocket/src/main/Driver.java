@@ -15,7 +15,7 @@ public class Driver {
 
 	public Driver() throws SQLException, ClassNotFoundException {
 		Class.forName("com.mysql.jdbc.Driver");
-		myConn = DriverManager.getConnection("jdbc:mysql://localhost/pocketChips?autoReconnect=true&useSSL=false", "pokerChipsRemote", "pokerChips14?!");
+		myConn = DriverManager.getConnection("jdbc:mysql://localhost/pocketChips?autoReconnect=true&useSSL=false", "pokerChipsRemote", Passwords.MySQLPassword);
 	}
 
 	public boolean userExists(String userID) throws SQLException {

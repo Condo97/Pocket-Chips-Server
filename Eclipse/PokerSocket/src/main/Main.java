@@ -218,6 +218,14 @@ public class Main {
 						PokerPlayerObject p = Protocol.getPokerPlayerById(g.getPlayers().get(i).getId());
 
 						String output = "pl:" + p.getId() + ":" + g.getId() + ":" + p.getChipObject().getRed() + ":" + p.getChipObject().getBlue() + ":" + p.getChipObject().getYellow() + ":" + p.getChipObject().getGreen() + ":" + p.getChipObject().getOrange() + ":" + g.getPotChipObject().getRed() + ":" + g.getPotChipObject().getBlue() + ":" + g.getPotChipObject().getYellow() + ":" + g.getPotChipObject().getGreen() + ":" + g.getPotChipObject().getOrange();
+
+						output += "&";
+						output += (g.getChipValues()[0] + ":");
+						output += (g.getChipValues()[1] + ":");
+						output += (g.getChipValues()[2] + ":");
+						output += (g.getChipValues()[3] + ":");
+						output += (g.getChipValues()[4] + ":");
+
 						out.println(output);
 
 						return;
@@ -232,6 +240,14 @@ public class Main {
 				Protocol.updatePlayerInDatabase(p);
 
 				String output = "pl:" + p.getId() + ":" + g.getId() + ":" + p.getChipObject().getRed() + ":" + p.getChipObject().getBlue() + ":" + p.getChipObject().getYellow() + ":" + p.getChipObject().getGreen() + ":" + p.getChipObject().getOrange() + ":" + g.getPotChipObject().getRed() + ":" + g.getPotChipObject().getBlue() + ":" + g.getPotChipObject().getYellow() + ":" + g.getPotChipObject().getGreen() + ":" + g.getPotChipObject().getOrange();
+
+				output += "&";
+				output += (g.getChipValues()[0] + ":");
+				output += (g.getChipValues()[1] + ":");
+				output += (g.getChipValues()[2] + ":");
+				output += (g.getChipValues()[3] + ":");
+				output += (g.getChipValues()[4] + ":");
+
 				out.println(output);
 
 			} catch (SQLException e) {

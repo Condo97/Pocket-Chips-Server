@@ -1,9 +1,8 @@
 package objects;
 
+import javax.xml.bind.DatatypeConverter;
 import java.util.ArrayList;
 import java.util.Random;
-
-import javax.xml.bind.DatatypeConverter;
 
 public class GameObject {
 	private String id, name;
